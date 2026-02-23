@@ -1,0 +1,1027 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Elite AI Football Analytics Platform</title>
+    <style>
+        :root {
+            --bg-deep: #0a0b0d;
+            --bg-card: #15171a;
+            --bg-input: #1c1f24;
+            --accent: #00ff88;
+            --accent-hover: #00cc6d;
+            --text-main: #e0e0e0;
+            --text-dim: #8e9299;
+            --border: #2d3138;
+            --danger: #ff4444;
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Utility Classes --- */
+        .hidden { display: none !important; }
+        .flex { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .w-full { width: 100%; }
+        .p-4 { padding: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .text-accent { color: var(--accent); }
+        .text-dim { color: var(--text-dim); }
+        .rounded { border-radius: 12px; }
+
+        /* --- Auth Screen --- */
+        #auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: radial-gradient(circle at top right, #1a2a22, #0a0b0d);
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        .auth-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: var(--text-dim);
+        }
+
+        .form-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            padding: 12px 16px;
+            border-radius: 10px;
+            color: white;
+            font-size: 15px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-dim);
+            margin-top: 12px;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-main);
+        }
+
+        /* --- Dashboard Layout --- */
+        #dashboard-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 100vh;
+        }
+
+        @media (max-width: 992px) {
+            #dashboard-container {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none !important;
+            }
+            .mobile-nav {
+                display: flex !important;
+            }
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            background: var(--bg-card);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: grid;
+            place-items: center;
+            color: black;
+        }
+
+        .logo-text {
+            font-weight: 800;
+            font-size: 18px;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-list {
+            list-style: none;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dim);
+            transition: all 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--accent);
+        }
+
+        .nav-item.active {
+            font-weight: 600;
+        }
+
+        /* --- Main Content --- */
+        .main-content {
+            padding: 32px;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .user-badge {
+            background: var(--bg-card);
+            padding: 8px 16px;
+            border-radius: 100px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .tab-content {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Cards & Grids --- */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .main-content { padding: 16px; }
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* --- Stats Visuals --- */
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .progress-container {
+            height: 8px;
+            background: var(--bg-input);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rating-badge {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .rating-high { background: rgba(0, 255, 136, 0.2); color: var(--accent); }
+        .rating-mid { background: rgba(255, 170, 0, 0.2); color: #ffa500; }
+        .rating-low { background: rgba(255, 68, 68, 0.2); color: var(--danger); }
+
+        /* --- Team Cards --- */
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .team-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .team-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 4px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            color: var(--text-dim);
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .edit-btn:hover { color: var(--accent); }
+        .delete-btn .del-icon:hover { color: var(--danger); }
+
+        /* --- Comparison Table --- */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th {
+            padding: 16px;
+            background: var(--bg-input);
+            color: var(--text-main);
+            font-weight: 700;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .comparison-table td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid var(--border);
+            font-size: 14px;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .stat-label {
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .winner-stat {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* --- Mobile Nav --- */
+        .mobile-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            padding: 8px 0;
+            justify-content: space-around;
+            z-index: 1000;
+            overflow-x: auto;
+        }
+
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            color: var(--text-dim);
+            min-width: 60px;
+        }
+
+        .mobile-nav-item.active { color: var(--accent); }
+
+        /* --- Import Area --- */
+        .import-area {
+            border: 2px dashed var(--border);
+            padding: 20px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-input);
+            margin-bottom: 16px;
+        }
+        .import-area:hover {
+            border-color: var(--accent);
+            background: rgba(0, 255, 136, 0.05);
+        }
+        .import-textarea {
+            width: 100%;
+            height: 120px;
+            background: var(--bg-input);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            padding: 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            margin-bottom: 12px;
+            resize: vertical;
+        }
+
+        /* --- VS Bars --- */
+        .vs-row {
+            margin-bottom: 20px;
+        }
+        .vs-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .vs-container {
+            display: flex;
+            height: 10px;
+            background: var(--bg-input);
+            border-radius: 5px;
+            overflow: hidden;
+            gap: 2px;
+        }
+        .vs-fill-home {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.6s ease;
+        }
+        .vs-fill-away {
+            height: 100%;
+            background: #ffa500;
+            transition: width 0.6s ease;
+        }
+        .vs-label-center {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        /* --- Table --- */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px;
+            color: var(--text-dim);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* --- Probability Circle --- */
+        .prob-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .prob-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--accent);
+            margin: 8px 0;
+        }
+
+        /* --- Toast Notification --- */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent);
+            padding: 12px 24px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            z-index: 2000;
+            transform: translateY(100px);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #toast.show { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- Auth Screen -->
+    <div id="auth-container">
+        <div class="auth-card">
+            <div class="logo-area" style="justify-content: center;">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <span class="logo-text">ELITE AI</span>
+            </div>
+            <div id="login-form">
+                <h1 class="auth-title">Welcome Back</h1>
+                <p class="auth-subtitle">Enter your credentials to access analytics</p>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="login-username" class="form-input" placeholder="Enter username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="login-password" class="form-input" placeholder="••••••••">
+                </div>
+                <button onclick="app.auth.login()" class="btn btn-primary">Sign In</button>
+                <button onclick="app.ui.toggleAuth(false)" class="btn btn-ghost">Don't have an account? Register</button>
+            </div>
+            <div id="register-form" class="hidden">
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join the elite network of football analysts</p>
+                <div class="form-group">
+                    <label class="form-label">Username</label>
+                    <input type="text" id="reg-username" class="form-input" placeholder="Choose username">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    <input type="password" id="reg-password" class="form-input" placeholder="Create password">
+                </div>
+                <button onclick="app.auth.register()" class="btn btn-primary">Create Account</button>
+                <button onclick="app.ui.toggleAuth(true)" class="btn btn-ghost">Already have an account? Login</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboard-container" class="hidden">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <span class="logo-text">ELITE ANALYTICS</span>
+            </div>
+            <nav class="nav-list">
+                <div class="nav-item active" onclick="app.ui.switchTab('teams')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Team Database
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('comparison')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 3H3v5"/><path d="M21 3 14.5 9.5"/><path d="M3 3l6.5 6.5"/><path d="M16 21h5v-5"/><path d="M8 21H3v-5"/><path d="M21 21l-6.5-6.5"/><path d="M3 21l6.5-6.5"/></svg>
+                    Stat Comparison
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('analyzer')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                    Match Analyzer
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('win-prob')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                    Win Probability
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('over-under')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 16 4-4 4 4 4-4 4 4"/><path d="M3 8h18"/></svg>
+                    Over / Under
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('gg-ng')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7"/><path d="m9 11 3 3L22 4"/><path d="m22 10-2.5 2.5L17 10"/></svg>
+                    GG / NG Engine
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('score-predictor')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                    Score Predictor
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('simulator')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    League Simulator
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('history')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg>
+                    History
+                </div>
+                <div class="nav-item" onclick="app.ui.switchTab('settings')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Settings
+                </div>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="header">
+                <h2 id="tab-title">Team Database</h2>
+                <div class="user-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span id="current-user-display">User</span>
+                </div>
+            </header>
+
+            <!-- Tab Content: Teams -->
+            <div id="tab-teams" class="tab-content">
+                <div class="grid-2 mb-4">
+                    <div class="card">
+                        <h3 class="card-title" id="team-form-title">Add New Team</h3>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Team Name</label>
+                                <input type="text" id="team-name" class="form-input" placeholder="e.g. Manchester City">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Matches Played</label>
+                                <input type="number" id="team-played" class="form-input" value="0">
+                            </div>
+                        </div>
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label class="form-label">Wins</label>
+                                <input type="number" id="team-wins" class="form-input" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Draws</label>
+                                <input type="number" id="team-draws" class="form-input" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Losses</label>
+                                <input type="number" id="team-losses" class="form-input" value="0">
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Goals Scored</label>
+                                <input type="number" id="team-scored" class="form-input" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Goals Conceded</label>
+                                <input type="number" id="team-conceded" class="form-input" value="0">
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Home Goals Avg</label>
+                                <input type="number" step="0.1" id="team-home-avg" class="form-input" value="0.0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Away Goals Avg</label>
+                                <input type="number" step="0.1" id="team-away-avg" class="form-input" value="0.0">
+                            </div>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Clean Sheets</label>
+                                <input type="number" id="team-clean" class="form-input" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">BTTS %</label>
+                                <input type="number" id="team-btts" class="form-input" value="0">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="app.db.saveTeam()" id="save-team-btn" class="btn btn-primary">Save Team to Database</button>
+                            <button onclick="app.db.cancelEdit()" id="cancel-edit-btn" class="btn btn-ghost hidden" style="margin-top: 0; border: 1px solid var(--border);">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-title">Bulk Import League Table</h3>
+                        <p class="text-dim mb-4" style="font-size: 13px;">
+                            Upload a CSV or paste a table from Excel. Required columns: 
+                            <code class="text-accent">Team, MP, W, D, L, GF, GA</code>
+                        </p>
+                        <div class="import-area" onclick="document.getElementById('csv-upload').click()">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="mb-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                            <div>Click to Upload CSV</div>
+                            <input type="file" id="csv-upload" class="hidden" accept=".csv,.txt" onchange="app.db.handleFileUpload(event)">
+                        </div>
+                        <div class="text-dim mb-2" style="font-size: 11px; text-transform: uppercase; font-weight: 700;">Or Paste Data Below</div>
+                        <textarea id="import-paste" class="import-textarea" placeholder="Paste table rows here..."></textarea>
+                        <button onclick="app.db.importFromPaste()" class="btn btn-ghost" style="border: 1px solid var(--border);">Process Pasted Data</button>
+                    </div>
+                </div>
+                <div class="team-grid" id="teams-list">
+                    <!-- Teams will be injected here -->
+                </div>
+            </div>
+
+            <!-- Tab Content: Comparison -->
+            <div id="tab-comparison" class="tab-content hidden">
+                <div class="card mb-4">
+                    <h3 class="card-title">Compare Team Statistics</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Team A</label>
+                            <select id="comp-team-a" class="form-input" onchange="app.ui.renderComparison()"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Team B</label>
+                            <select id="comp-team-b" class="form-input" onchange="app.ui.renderComparison()"></select>
+                        </div>
+                    </div>
+                </div>
+                <div id="comparison-results" class="card hidden">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th id="comp-name-a">Team A</th>
+                                <th>STATISTIC</th>
+                                <th id="comp-name-b">Team B</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparison-body">
+                            <!-- Comparison rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="comparison-empty" class="card" style="text-align: center; padding: 60px;">
+                    <p class="text-dim">Select two teams to see a side-by-side statistical breakdown.</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Match Analyzer -->
+            <div id="tab-analyzer" class="tab-content hidden">
+                <div class="card mb-4">
+                    <h3 class="card-title">Select Matchup</h3>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Home Team</label>
+                            <select id="match-home" class="form-input" onchange="app.ui.updateAnalyzer()"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Away Team</label>
+                            <select id="match-away" class="form-input" onchange="app.ui.updateAnalyzer()"></select>
+                        </div>
+                    </div>
+                </div>
+                <div id="analyzer-results" class="hidden">
+                    <div class="grid-2 mb-4">
+                        <div class="card">
+                            <h3 class="card-title">Attack vs Defense</h3>
+                            <div class="stat-row">
+                                <span>Home Attack Rating</span>
+                                <span id="home-atk-val" class="text-accent">0</span>
+                            </div>
+                            <div class="progress-container"><div id="home-atk-bar" class="progress-bar"></div></div>
+                            <div class="stat-row mt-4" style="margin-top: 16px;">
+                                <span>Away Defense Rating</span>
+                                <span id="away-def-val" class="text-accent">0</span>
+                            </div>
+                            <div class="progress-container"><div id="away-def-bar" class="progress-bar" style="background: #ffa500;"></div></div>
+                        </div>
+                        <div class="card">
+                            <h3 class="card-title">Form Comparison</h3>
+                            <div class="stat-row">
+                                <span id="home-name-display">Home</span>
+                                <span id="home-form-badge" class="rating-badge rating-high">A</span>
+                            </div>
+                            <div class="stat-row">
+                                <span id="away-name-display">Away</span>
+                                <span id="away-form-badge" class="rating-badge rating-mid">B</span>
+                            </div>
+                            <div class="prob-card">
+                                <div class="text-dim">Expected Goals (xG)</div>
+                                <div class="prob-value" id="match-xg">0.0 - 0.0</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card mb-4">
+                        <h3 class="card-title">Detailed Stat Comparison</h3>
+                        <div class="vs-row">
+                            <div class="vs-header">
+                                <span id="vs-home-goals">0</span>
+                                <span>Goals Scored (Avg)</span>
+                                <span id="vs-away-goals">0</span>
+                            </div>
+                            <div class="vs-container">
+                                <div id="vs-bar-home-goals" class="vs-fill-home" style="width: 50%;"></div>
+                                <div id="vs-bar-away-goals" class="vs-fill-away" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="vs-row">
+                            <div class="vs-header">
+                                <span id="vs-home-conc">0</span>
+                                <span>Goals Conceded (Avg)</span>
+                                <span id="vs-away-goals-conc">0</span>
+                            </div>
+                            <div class="vs-container">
+                                <div id="vs-bar-home-conc" class="vs-fill-home" style="width: 50%;"></div>
+                                <div id="vs-bar-away-conc" class="vs-fill-away" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                        <div class="vs-row">
+                            <div class="vs-header">
+                                <span id="vs-home-rating">0</span>
+                                <span>Overall Power Index</span>
+                                <span id="vs-away-rating">0</span>
+                            </div>
+                            <div class="vs-container">
+                                <div id="vs-bar-home-rating" class="vs-fill-home" style="width: 50%;"></div>
+                                <div id="vs-bar-away-rating" class="vs-fill-away" style="width: 50%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="card-title" style="margin-bottom: 0;">Live AI Intelligence</h3>
+                            <button onclick="app.ui.generateAIInsights()" id="ai-btn" class="btn btn-accent" style="width: auto; padding: 8px 16px; font-size: 12px;">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 6px;"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+                                Generate Insights
+                            </button>
+                        </div>
+                        <div id="ai-insights-container" class="text-dim" style="font-size: 13px; line-height: 1.6;">
+                            Click the button above to fetch real-time tactical analysis and news-driven predictions.
+                        </div>
+                    </div>
+                </div>
+                <div id="analyzer-empty" class="card" style="text-align: center; padding: 60px;">
+                    <p class="text-dim">Please select two different teams from your database to begin analysis.</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Win Probability -->
+            <div id="tab-win-prob" class="tab-content hidden">
+                <div class="grid-3 mb-4">
+                    <div class="card prob-card">
+                        <h3 class="card-title" style="justify-content: center;">Home Win</h3>
+                        <div class="prob-value" id="prob-home">0%</div>
+                        <div class="progress-container"><div id="bar-home" class="progress-bar"></div></div>
+                    </div>
+                    <div class="card prob-card">
+                        <h3 class="card-title" style="justify-content: center;">Draw</h3>
+                        <div class="prob-value" id="prob-draw">0%</div>
+                        <div class="progress-container"><div id="bar-draw" class="progress-bar" style="background: #8e9299;"></div></div>
+                    </div>
+                    <div class="card prob-card">
+                        <h3 class="card-title" style="justify-content: center;">Away Win</h3>
+                        <div class="prob-value" id="prob-away">0%</div>
+                        <div class="progress-container"><div id="bar-away" class="progress-bar" style="background: #ffa500;"></div></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="card-title">Statistical Reasoning</h3>
+                    <p id="win-reasoning" class="text-dim">Select a matchup in the Analyzer to see win probabilities based on current database statistics.</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Over / Under -->
+            <div id="tab-over-under" class="tab-content hidden">
+                <div class="grid-2" id="ou-grid">
+                    <!-- OU Cards will be injected here -->
+                </div>
+            </div>
+
+            <!-- Tab Content: GG / NG -->
+            <div id="tab-gg-ng" class="tab-content hidden">
+                <div class="grid-2">
+                    <div class="card prob-card">
+                        <h3 class="card-title" style="justify-content: center;">Both Teams to Score (GG)</h3>
+                        <div class="prob-value" id="prob-gg">0%</div>
+                        <div class="progress-container"><div id="bar-gg" class="progress-bar"></div></div>
+                    </div>
+                    <div class="card prob-card">
+                        <h3 class="card-title" style="justify-content: center;">One/No Team to Score (NG)</h3>
+                        <div class="prob-value" id="prob-ng">0%</div>
+                        <div class="progress-container"><div id="bar-ng" class="progress-bar" style="background: #ffa500;"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Score Predictor -->
+            <div id="tab-score-predictor" class="tab-content hidden">
+                <div class="grid-2" id="score-grid">
+                    <!-- Top scores will be injected here -->
+                </div>
+            </div>
+
+            <!-- Tab Content: Simulator -->
+            <div id="tab-simulator" class="tab-content hidden">
+                <div class="card">
+                    <h3 class="card-title">Estimated League Standings</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>P</th>
+                                <th>GD</th>
+                                <th>Pts</th>
+                                <th>Index</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sim-table-body">
+                            <!-- Table rows injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content: History -->
+            <div id="tab-history" class="tab-content hidden">
+                <div class="card mb-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="card-title" style="margin-bottom: 0;">Prediction History</h3>
+                        <button onclick="app.db.clearHistory()" class="btn btn-ghost" style="width: auto; margin-top: 0; color: var(--danger);">Clear All</button>
+                    </div>
+                    <div id="history-list">
+                        <!-- History items injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Settings -->
+            <div id="tab-settings" class="tab-content hidden">
+                <div class="card mb-4">
+                    <h3 class="card-title">Account Details</h3>
+                    <div class="stat-row">
+                        <span>Username</span>
+                        <span id="settings-username" class="text-accent">User</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Total Predictions</span>
+                        <span id="settings-preds" class="text-accent">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span>Database Size</span>
+                        <span id="settings-teams" class="text-accent">0 Teams</span>
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <button onclick="app.auth.logout()" class="btn btn-ghost" style="border: 1px solid var(--border);">Logout Session</button>
+                    <button onclick="app.auth.deleteAccount()" class="btn btn-ghost" style="color: var(--danger); border: 1px solid var(--danger);">Delete Account</button>
+                </div>
+            </div>
+        </main>
+
+        <!-- Mobile Nav -->
+        <nav class="mobile-nav">
+            <div class="mobile-nav-item active" onclick="app.ui.switchTab('teams')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                Teams
+            </div>
+            <div class="mobile-nav-item" onclick="app.ui.switchTab('comparison')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5"/><path d="M8 3H3v5"/></svg>
+                Compare
+            </div>
+            <div class="mobile-nav-item" onclick="app.ui.switchTab('analyzer')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Analyze
+            </div>
+            <div class="mobile-nav-item" onclick="app.ui.switchTab('win-prob')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                Win
+            </div>
+            <div class="mobile-nav-item" onclick="app.ui.switchTab('score-predictor')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+                Scores
+            </div>
+            <div class="mobile-nav-item" onclick="app.ui.switchTab('settings')">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg>
+                User
+            </div>
+        </nav>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast">Message here</div>
+
+    <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
